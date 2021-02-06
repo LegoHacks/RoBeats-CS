@@ -9,6 +9,10 @@
         Nice attempt of jumpscaring people who use my script (https://sperg.club/uploads/ixBJSEGqHs12bdih.png) but this was a VERY EASY unpatch :lolfuckyou:
 ]]
 
+-- ScriptWare support
+
+local getupvalue = (getupvalue or debug.getupvalue);
+
 -- Init
 
 local replicatedStorage = game:GetService("ReplicatedStorage");
