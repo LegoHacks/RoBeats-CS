@@ -4,6 +4,9 @@
     By Spencer#0003
 
     I actually documentated this script :flushed:
+
+    To the RoBeats CS devs,
+        Nice attempt of jumpscaring people who use my script (https://sperg.club/uploads/ixBJSEGqHs12bdih.png) but this was a VERY EASY unpatch :lolfuckyou:
 ]]
 
 -- Init
@@ -17,6 +20,7 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoH
 
 local getNoteType;
 local _game, trackSystem;
+local password; --> Fuck your shit jumpscare, cunt.
 
 do --> Do blocks are sexy.
     local trackSystemModule = require(replicatedStorage.Local.TrackSystem);
@@ -27,6 +31,7 @@ do --> Do blocks are sexy.
 
     _gameModule.new = newcclosure(function(...)
         _game = gameLocalNew(...); --> Grab the game table.
+        password = getupvalue(_game.can_mult, 1);
         return _game;
     end);
 
@@ -35,28 +40,35 @@ do --> Do blocks are sexy.
         return trackSystem;
     end);
 
-    ------
+    -- Thanks lolasj12491294
 
-    local marvelousResult, perfectResult, greatResult, goodResult, badResult, missResult = 6, 5, 4, 3, 2, 1;
+    local enum_res = {
+        missResult = 1;
+        okayResult = 2;
+        goodResult = 3;
+        greatResult = 4;
+        perfectResult = 5;
+        marvelousResult = 6;
+    };
+
+    local mapped_e = {
+        enum_res.marvelousResult;
+        enum_res.perfectResult;
+        enum_res.greatResult;
+        enum_res.goodPercentage;
+        enum_res.okayResult;
+        enum_res.missPercentage;
+    };
 
     function getNoteType()
-        local marvelous = Random.new():NextNumber(0, 100) <= library.flags.marvelousPercentage;
-        local perfect = Random.new():NextNumber(0, 100) <= library.flags.perfectPercentage;
-        local great = Random.new():NextNumber(0, 100) <= library.flags.greatPercentage;
-        local good = Random.new():NextNumber(0, 100) <= library.flags.goodPercentage;
-        local bad = Random.new():NextNumber(0, 100) <= library.flags.badPercentage;
-    
-        if (marvelous) then --> Calculate note type.
-            return marvelousResult;
-        elseif (perfect) then
-            return perfectResult;
-        elseif (great) then
-            return greatResult;
-        elseif (good) then
-            return okayResult;
+        local r = Random.new();
+        for i, v in ipairs{library.flags.marvelousPercentage, library.flags.perfectPercentage, library.flags.greatPercentage, library.flags.goodPercentage, library.flags.okayResult} do
+            if (r:NextNumber(0, 100) <= v) then
+                return mapped_e[i];
+            end;
         end;
-    
-        return 0;
+
+        return enum_res.missPercentage;
     end;
 end;
 
@@ -95,8 +107,8 @@ robeatsCS:AddSlider({
 });
 
 robeatsCS:AddSlider({
-    text = "Bad";
-    flag = "badPercentage";
+    text = "Okay";
+    flag = "okayResult";
     min = 0;
     max = 100;
     default = 0;
@@ -119,8 +131,8 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
     if (library.flags.enabled and _game and trackSystem) then
         local notes = trackSystem._notes;
         for i = 1, notes:count() do --> Loop through each note
-            if (syn_context_set) then
-                syn_context_set(2); --> Synapse fucking errors without this :kms:
+            if (syn_context_set or setidentity) then
+                (syn_context_set or setidentity)(2); --> Synapse and ScriptWare fucking error without this :kms:
             end;
             
             local noteType = getNoteType();
@@ -130,16 +142,18 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
 
             if (syn_context_set) then
                 syn_context_set(7); --> Restore original context.
+            elseif (setidentity) then
+                setidentity(8); --> ScriptWare's context is 8 instead of 7 for some reason.
             end;
 
             if (testResult and testScoreResult == noteType) then
                 local track = trackSystem:get_track(noteTrack); --> Get track.
                 track:press(); --> Press track (doesn't actually hit note).
 
-                note:on_hit(_game, noteType, i); --> Fire on hit event for current note with chosen result e.g. Marvelous.
+                note:on_hit(_game, noteType, i, password); --> Fire on hit event for current note with chosen result e.g. Marvelous.
 
                 if (note.Type == "HeldNote") then
-                    note:on_release(_game, noteType, i); --> If note is held, release it.
+                    note:on_release(_game, noteType, i, password); --> If note is held, release it.
                 end;
                 
                 track:release(); --> Release the track.
