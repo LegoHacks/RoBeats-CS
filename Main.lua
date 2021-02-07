@@ -34,16 +34,16 @@ do --> Do blocks are sexy.
     local trackSystemNew = trackSystemModule.new;
     local gameLocalNew = _gameModule.new;
 
-    _gameModule.new = newcclosure(function(...)
+    function _gameModule.new(...)
         _game = gameLocalNew(...); --> Grab the game table.
         password = getupvalue(_game.can_mult, 1);
         return _game;
-    end);
+    end;
 
-    trackSystemModule.new = newcclosure(function(...)
+    function trackSystemModule.new(...)
         trackSystem = trackSystemNew(...); --> Grab the tracksystem.
         return trackSystem;
-    end);
+    end;
 
     -- Thanks lolasj12491294
 
