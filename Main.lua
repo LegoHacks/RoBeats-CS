@@ -7,6 +7,7 @@
 
     To the RoBeats CS devs,
         Nice attempt of jumpscaring people who use my script (https://sperg.club/uploads/ixBJSEGqHs12bdih.png) but this was a VERY EASY unpatch :lolfuckyou:
+        07/02/21: You changed it to a rickroll? Too bad you can't patch for shit :lolfuckyou:
 ]]
 
 -- ScriptWare support
@@ -46,13 +47,15 @@ do --> Do blocks are sexy.
 
     -- Thanks lolasj12491294
 
+    local noteResults = require(replicatedStorage.Shared.NoteResult); -- Auto updating because you "devs" are fucking autistic, love you though no homo :)
+
     local enum_res = {
-        missResult = 1;
-        okayResult = 2;
-        goodResult = 3;
-        greatResult = 4;
-        perfectResult = 5;
-        marvelousResult = 6;
+        missResult = noteResults.Miss;
+        okayResult = noteResults.Okay;
+        goodResult = noteResults.Good;
+        greatResult = noteResults.Great;
+        perfectResult = noteResults.Perfect;
+        marvelousResult = noteResults.Marvelous;
     };
 
     local mapped_e = {
@@ -140,7 +143,7 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
             end;
             
             local noteType = getNoteType();
-            local note = notes:get(i); --> Get the note.
+            local note = notes:get(i, password); --> Get the note.
             local noteTrack = note:get_track_index(); --> Get the track index.
             local testResult, testScoreResult = note.test_hit(note, _game); --> Test note hit result e.g. Marvelous, perfect etc.
 
