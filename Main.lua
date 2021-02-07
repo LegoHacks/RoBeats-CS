@@ -146,6 +146,7 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
             local note = notes:get(i, password); --> Get the note.
             local noteTrack = note:get_track_index(); --> Get the track index.
             local testResult, testScoreResult = note.test_hit(note, _game); --> Test note hit result e.g. Marvelous, perfect etc.
+            local testRelease, releaseScoreResult = note.test_release(note, _game); --> Test note hit result e.g. Marvelous, perfect etc.
 
             if (syn_context_set) then
                 syn_context_set(7); --> Restore original context.
@@ -153,17 +154,21 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
                 setidentity(8); --> ScriptWare's context is 8 instead of 7 for some reason.
             end;
 
+            local track = trackSystem:get_track(noteTrack); --> Get track.
+
             if (testResult and testScoreResult == noteType) then
-                local track = trackSystem:get_track(noteTrack); --> Get track.
                 track:press(); --> Press track (doesn't actually hit note).
-
                 note:on_hit(_game, noteType, i, password); --> Fire on hit event for current note with chosen result e.g. Marvelous.
-
+                delay(math.random(0.01, 0.5), function()
+                    if (note.Type ~= "HeldNote") then
+                        track:release(); --> Release the track.
+                    end;
+                end);
+            elseif (testRelease and releaseScoreResult == noteType) then
                 if (note.Type == "HeldNote") then
                     note:on_release(_game, noteType, i, password); --> If note is held, release it.
+                    track:release(); --> Release the track.
                 end;
-                
-                track:release(); --> Release the track.
             end;
         end;
     end;
