@@ -24,15 +24,19 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoH
 -- Main
 
 local getNoteType;
-local _game, trackSystem;
+local _game, trackSystem, gameJoin;
 local password; --> Fuck your shit jumpscare, cunt.
 
 do --> Do blocks are sexy.
     local trackSystemModule = require(replicatedStorage.Local.TrackSystem);
     local _gameModule = require(replicatedStorage.Local.GameLocal);
+    local gameJoinModule = require(replicatedStorage.Local.GameJoin);
+    local curveUtil = require(replicatedStorage.Shared.CurveUtil);
 
     local trackSystemNew = trackSystemModule.new;
     local gameLocalNew = _gameModule.new;
+    local gameJoinNew = gameJoinModule.new;
+    local timescaleToDeltaTime = curveUtil.TimescaleToDeltaTime;
 
     function _gameModule.new(...)
         _game = gameLocalNew(...); --> Grab the game table.
@@ -43,6 +47,21 @@ do --> Do blocks are sexy.
     function trackSystemModule.new(...)
         trackSystem = trackSystemNew(...); --> Grab the tracksystem.
         return trackSystem;
+    end;
+
+    function gameJoinModule.new(...)
+        gameJoin = gameJoinNew(...);
+        return gameJoin;
+    end;
+
+    function curveUtil.TimescaleToDeltaTime(self, ...)
+        local args = {...};
+
+        if (getupvalue(gameJoin.start_game, 1) and library.flags.song_speed) then
+            return args[1] * library.flags.chosen_speed / 30;
+        end;
+
+        return timescaleToDeltaTime(self, ...);
     end;
 
     -- Thanks lolasj12491294
@@ -132,6 +151,21 @@ robeatsCS:AddSlider({
 robeatsCS:AddToggle({
     text = "Enabled";
     flag = "enabled";
+});
+
+local misc = library:CreateWindow("Misc");
+
+misc:AddToggle({
+    text = "Song Speed";
+    flag = "song_speed";
+});
+
+misc:AddSlider({
+    text = "Speed";
+    flag = "chosen_speed";
+    min = 1;
+    max = 5;
+    default = 1;
 });
 
 runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
