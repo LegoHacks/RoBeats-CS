@@ -179,8 +179,8 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
             local noteType = getNoteType();
             local note = notes:get(i, password); --> Get the note.
             local noteTrack = note:get_track_index(); --> Get the track index.
-            local testResult, testScoreResult = note.test_hit(note, _game); --> Test note hit result e.g. Marvelous, perfect etc.
-            local testRelease, releaseScoreResult = note.test_release(note, _game); --> Test note hit result e.g. Marvelous, perfect etc.
+            local testResult, testScoreResult = note:test_hit(_game); --> Test note hit result e.g. Marvelous, perfect etc.
+            local testRelease, releaseScoreResult = note:test_release(_game); --> Test note hit result e.g. Marvelous, perfect etc.
 
             if (syn_context_set) then
                 syn_context_set(7); --> Restore original context.
