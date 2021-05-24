@@ -1,13 +1,9 @@
 --[[
     RoBeats CS Auto Player
-
     By Spencer#0003
 
     I actually documentated this script :flushed:
-
-    To the RoBeats CS devs,
-        Nice attempt of jumpscaring people who use my script (https://sperg.club/uploads/ixBJSEGqHs12bdih.png) but this was a VERY EASY unpatch :lolfuckyou:
-        07/02/21: You changed it to a rickroll? Too bad you can't patch for shit :lolfuckyou:
+    24/05/21: New update kinda broke the script, I updated it but I do not care to fix the bugs.
 ]]
 
 -- ScriptWare support
@@ -24,25 +20,16 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/LegoH
 -- Main
 
 local getNoteType;
-local _game, trackSystem, gameJoin;
-local password; --> Fuck your shit jumpscare, cunt.
+local trackSystem, gameJoin;
 
 do --> Do blocks are sexy.
-    local trackSystemModule = require(replicatedStorage.Local.TrackSystem);
-    local _gameModule = require(replicatedStorage.Local.GameLocal);
-    local gameJoinModule = require(replicatedStorage.Local.GameJoin);
+    local trackSystemModule = require(replicatedStorage.RobeatsGameCore.NoteTrack.NoteTrackSystem);
+    local gameJoinModule = require(replicatedStorage.RobeatsGameCore.RobeatsGame);
     local curveUtil = require(replicatedStorage.Shared.CurveUtil);
 
     local trackSystemNew = trackSystemModule.new;
-    local gameLocalNew = _gameModule.new;
     local gameJoinNew = gameJoinModule.new;
     local timescaleToDeltaTime = curveUtil.TimescaleToDeltaTime;
-
-    function _gameModule.new(...)
-        _game = gameLocalNew(...); --> Grab the game table.
-        password = getupvalue(_game.can_mult, 1);
-        return _game;
-    end;
 
     function trackSystemModule.new(...)
         trackSystem = trackSystemNew(...); --> Grab the tracksystem.
@@ -50,23 +37,17 @@ do --> Do blocks are sexy.
     end;
 
     function gameJoinModule.new(...)
-        gameJoin = gameJoinNew(...);
+        gameJoin = gameJoinNew(...); --> Grab gameJoin
         return gameJoin;
     end;
 
     function curveUtil.TimescaleToDeltaTime(self, ...)
-        local args = {...};
-
-        if (getupvalue(gameJoin.start_game, 1) and library.flags.song_speed) then
-            return args[1] * library.flags.chosen_speed / 30;
-        end;
-
-        return timescaleToDeltaTime(self, ...);
+        return (library.flags.song_speed and library.flags.chosen_speed / 30 or timescaleToDeltaTime(self, ...));
     end;
 
-    -- Thanks lolasj12491294
+    -- Thanks Cyclops
 
-    local noteResults = require(replicatedStorage.Shared.NoteResult); -- Auto updating because you "devs" are fucking autistic, love you though no homo :)
+    local noteResults = require(replicatedStorage.RobeatsGameCore.Enums.NoteResult); -- Auto update enums.
 
     local enum_res = {
         missResult = noteResults.Miss;
@@ -169,30 +150,19 @@ misc:AddSlider({
 });
 
 runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
-    if (library.flags.enabled and _game and trackSystem) then
-        local notes = trackSystem._notes;
+    if (library.flags.enabled and gameJoin and trackSystem) then
+        local notes = trackSystem.get_notes(); --> Get all notes
         for i = 1, notes:count() do --> Loop through each note
-            if (syn_context_set or setidentity) then
-                (syn_context_set or setidentity)(2); --> Synapse and ScriptWare fucking error without this :kms:
-            end;
-            
             local noteType = getNoteType();
-            local note = notes:get(i, password); --> Get the note.
+            local note = notes:get(i); --> Get the note.
             local noteTrack = note:get_track_index(); --> Get the track index.
-            local testResult, testScoreResult = note:test_hit(_game); --> Test note hit result e.g. Marvelous, perfect etc.
-            local testRelease, releaseScoreResult = note:test_release(_game); --> Test note hit result e.g. Marvelous, perfect etc.
-
-            if (syn_context_set) then
-                syn_context_set(7); --> Restore original context.
-            elseif (setidentity) then
-                setidentity(8); --> ScriptWare's context is 8 instead of 7 for some reason.
-            end;
-
+            local testResult, testScoreResult, renderableHit = note:test_hit(); --> Test note hit result e.g. Marvelous, perfect etc.
+            local testRelease, releaseScoreResult, renderableRelease = note:test_release(); --> Test note hit result e.g. Marvelous, perfect etc.
             local track = trackSystem:get_track(noteTrack); --> Get track.
 
             if (testResult and testScoreResult == noteType) then
                 track:press(); --> Press track (doesn't actually hit note).
-                note:on_hit(_game, noteType, i, password); --> Fire on hit event for current note with chosen result e.g. Marvelous.
+                note:on_hit(noteType, i, renderableHit); --> Fire on hit event for current note with chosen result e.g. Marvelous.
                 delay(math.random(0.01, 0.5), function()
                     if (note.Type ~= "HeldNote") then
                         track:release(); --> Release the track.
@@ -200,7 +170,7 @@ runService:BindToRenderStep("RoBeat CS Hackles", 5, function()
                 end);
             elseif (testRelease and releaseScoreResult == noteType) then
                 if (note.Type == "HeldNote") then
-                    note:on_release(_game, noteType, i, password); --> If note is held, release it.
+                    note:on_release(noteType, i, renderableRelease); --> If note is held, release it.
                     track:release(); --> Release the track.
                 end;
             end;
