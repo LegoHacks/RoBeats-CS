@@ -3,7 +3,7 @@
     By Spencer#0003
 
     I actually documentated this script :flushed:
-    24/05/21: New update kinda broke the script, I updated it but I do not care to fix the bugs.
+    24/05/21: Unpatched
 ]]
 
 -- ScriptWare support
